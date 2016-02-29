@@ -5,13 +5,13 @@ scalaVersion  := "2.11.7"
 scalacOptions := Seq("-unchecked", "-feature", "-deprecation", "-encoding", "utf8", "-language:postfixOps")
 
 libraryDependencies ++= {
-  val akkaStreamV      = "2.0.3"
+  val akkaStreamV      = "2.4.2"
   val scalaTestV       = "3.0.0-M15"
   val scalazScalaTestV = "0.2.3"
   val slickVersion     = "3.1.1"
   Seq(
-    "com.typesafe.akka"  %% "akka-stream-experimental"             % akkaStreamV,
-    "com.typesafe.akka"  %% "akka-http-core-experimental"          % akkaStreamV,
+    "com.typesafe.akka"  %% "akka-stream"             % akkaStreamV,
+    "com.typesafe.akka"  %% "akka-http-experimental"          % akkaStreamV,
     "com.typesafe.akka"  %% "akka-http-spray-json-experimental"    % akkaStreamV,
 
     "com.typesafe.slick" %% "slick"                                % slickVersion,
@@ -24,7 +24,7 @@ libraryDependencies ++= {
     "org.codehaus.janino" % "janino" % "2.7.8",
 
     "org.scalatest"      %% "scalatest"                            % scalaTestV       % "it,test",
-    "com.typesafe.akka"  %% "akka-http-testkit-experimental"       % akkaStreamV      % "it,test"
+    "com.typesafe.akka"  %% "akka-http-testkit"       % akkaStreamV      % "it,test"
   )
 }
 
