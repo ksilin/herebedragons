@@ -2,7 +2,7 @@ package com.example
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.example.data.{DragonTestData, SpecBase}
-import com.example.http.routes.DragonsServiceRoute
+import com.example.http.routes.DragonsService
 import org.scalatest.Matchers
 import spray.json._
 
@@ -10,7 +10,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class DragonsServiceSpec extends SpecBase
-  with DragonsServiceRoute
+  with DragonsService
   with Matchers
   with ScalatestRouteTest
   with DragonTestData {

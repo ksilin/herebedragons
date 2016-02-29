@@ -50,9 +50,6 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
   override def beforeAll() = Await.result(db.run(createTables andThen addTestData), 10 seconds)
   override def afterAll() = Await.result(db.run(dropTables), 10 seconds)
 
-  // TODO - from(Future). asTry, filter, grouped, fold
-  // TODO - andFinally, cleanup
-
   describe("actions") {
 
     it("select action") {

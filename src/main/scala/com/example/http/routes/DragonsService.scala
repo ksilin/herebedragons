@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import com.example.data.DragonRepository
 import spray.json._
 
-trait DragonsServiceRoute extends BaseServiceRoute with DragonRepository {
+trait DragonsService extends ServiceBase with DragonRepository {
 
   val dragonsRoute: Route = pathPrefix("dragons") {
     pathEndOrSingleSlash {

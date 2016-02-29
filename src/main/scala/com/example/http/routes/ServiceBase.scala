@@ -6,7 +6,7 @@ import com.example.utils.{HttpConfig, JsonProtocol}
 
 import scala.concurrent.ExecutionContext
 
-trait BaseServiceRoute extends JsonProtocol with SprayJsonSupport with HttpConfig {
+trait ServiceBase extends JsonProtocol with SprayJsonSupport with HttpConfig {
   protected implicit def executor: ExecutionContext
   protected implicit def materializer: ActorMaterializer
 }
