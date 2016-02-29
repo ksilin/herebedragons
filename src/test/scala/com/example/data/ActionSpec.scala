@@ -1,5 +1,6 @@
 package com.example.data
 
+import akka.{Done, NotUsed}
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
@@ -161,8 +162,8 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
 
       implicit val dragonFormat = jsonFormat4(Dragon)
 
-      val source: Source[Dragon, Unit] = Source.fromPublisher(dragonStream)
-      val ds: Future[Unit] = source.runWith(Sink.foreach { d: Dragon => println(d.toJson) })
+      val source: Source[Dragon, NotUsed] = Source.fromPublisher(dragonStream)
+      val ds: Future[Done] = source.runWith(Sink.foreach { d: Dragon => println(d.toJson) })
       ds map (_ => Succeeded)
     }
   }
