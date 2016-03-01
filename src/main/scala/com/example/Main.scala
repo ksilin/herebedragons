@@ -20,9 +20,8 @@ object Main extends App with DragonsService with DragonTestData {
 
   val dc: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile]("db.inmem_test")
 
-  // because we are faking it
-  Await.result(createTable(), 1 second)
-  Await.result(createAll(dragonsWithId), 1 second)
+  createTable()
+    .flatMap(_ ⇒ createAll(dragonsWithId))
+    .flatMap(_ ⇒ Http().bindAndHandle(dragonsRoute, httpInterface, httpPort))
 
-  Http().bindAndHandle(dragonsRoute, httpInterface, httpPort)
 }
