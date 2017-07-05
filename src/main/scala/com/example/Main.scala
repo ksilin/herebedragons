@@ -8,15 +8,13 @@ import com.example.http.routes.DragonsService
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 object Main extends App with DragonsService with DragonTestData {
 
-  private implicit val system = ActorSystem("dragons")
-
-  override protected implicit val executor: ExecutionContext = system.dispatcher
-  override protected implicit val materializer: ActorMaterializer = ActorMaterializer()
+  implicit val system                          = ActorSystem("dragons")
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  implicit val executor: ExecutionContext      = system.dispatcher
 
   val dc: DatabaseConfig[JdbcProfile] = DatabaseConfig.forConfig[JdbcProfile]("db.inmem_test")
 

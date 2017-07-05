@@ -1,29 +1,35 @@
 package com.example.http.routes
 
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.example.data.DragonRepository
-import spray.json._
+import com.example.utils.HttpConfig
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
+import io.circe.generic.auto._
 
-trait DragonsService extends ServiceBase with DragonRepository {
+trait DragonsService extends HttpConfig with DragonRepository with FailFastCirceSupport {
 
   val dragonsRoute: Route = pathPrefix("dragons") {
     pathEndOrSingleSlash {
-      parameter("name"){ name: String =>
+      parameter("name") { name: String =>
         get {
-          complete(getByName(name).map(_.toJson))
+          complete(getByName(name))
         }
       } ~
       get {
-        complete(getAll().map(_.toJson))
+        complete(getAll())
       }
     } ~
-      path(IntNumber) { id =>
-        pathEndOrSingleSlash {
-          get {
-            complete(getById(id).map(_.toJson))
+    path(IntNumber) { id =>
+      pathEndOrSingleSlash {
+        get {
+          onSuccess(getById(id)) {
+            case Some(f) => complete(OK, f)
+            case None    => complete(NotFound)
           }
         }
       }
+    }
   }
 }

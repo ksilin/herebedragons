@@ -1,30 +1,32 @@
-name          := """herebedragons"""
-organization  := "com.example"
-version       := "0.1.0"
-scalaVersion  := "2.11.7"
+name := "herebedragons"
+organization := "com.example"
+version := "0.1.1"
+scalaVersion := "2.12.2"
 scalacOptions := Seq("-unchecked", "-feature", "-deprecation", "-encoding", "utf8", "-language:postfixOps")
 
 libraryDependencies ++= {
-  val akkaStreamV      = "2.4.2"
-  val scalaTestV       = "3.0.0-M15"
-  val scalazScalaTestV = "0.2.3"
-  val slickVersion     = "3.1.1"
+  val akkaStreamV   = "2.5.3"
+  val akkaHttpV     = "10.0.9"
+  val akkaHttpCirce = "1.17.0"
+  val scalaTestV    = "3.0.3"
+  val slickVersion  = "3.2.0"
+  val Circe         = "0.8.0"
   Seq(
-    "com.typesafe.akka"  %% "akka-stream"             % akkaStreamV,
-    "com.typesafe.akka"  %% "akka-http-experimental"          % akkaStreamV,
-    "com.typesafe.akka"  %% "akka-http-spray-json-experimental"    % akkaStreamV,
-
-    "com.typesafe.slick" %% "slick"                                % slickVersion,
-    "mysql" % "mysql-connector-java" % "5.1.38",
-    "com.h2database"      % "h2"              % "1.4.191",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
-    "com.zaxxer" % "HikariCP" % "2.4.3",
-
-    "ch.qos.logback" % "logback-classic" % "1.1.3",
-    "org.codehaus.janino" % "janino" % "2.7.8",
-
-    "org.scalatest"      %% "scalatest"                            % scalaTestV       % "it,test",
-    "com.typesafe.akka"  %% "akka-http-testkit"       % akkaStreamV      % "it,test"
+    "com.typesafe.akka"          %% "akka-stream"         % akkaStreamV,
+    "com.typesafe.akka"          %% "akka-http"           % akkaHttpV,
+    "de.heikoseeberger"          %% "akka-http-circe"     % akkaHttpCirce,
+    "io.circe"                   %% "circe-generic"       % Circe,
+    "io.circe"                   %% "circe-parser"        % Circe,
+    "com.typesafe.slick"         %% "slick"               % slickVersion,
+    "com.typesafe.slick"         %% "slick-hikaricp"      % slickVersion,
+    "mysql"                      % "mysql-connector-java" % "6.0.6",
+    "com.h2database"             % "h2"                   % "1.4.196",
+    "com.zaxxer"                 % "HikariCP"             % "2.6.3",
+    "ch.qos.logback"             % "logback-classic"      % "1.2.3",
+    "org.codehaus.janino"        % "janino"               % "3.0.7",
+    "com.typesafe.scala-logging" %% "scala-logging"       % "3.5.0",
+    "org.scalatest"              %% "scalatest"           % scalaTestV % "it,test",
+    "com.typesafe.akka"          %% "akka-http-testkit"   % akkaHttpV % "it,test"
   )
 }
 
@@ -33,12 +35,6 @@ Defaults.itSettings
 
 Revolver.settings
 enablePlugins(JavaAppPackaging)
-enablePlugins(DockerPlugin)
-//enablePlugins(JmhPlugin)
-
-dockerExposedPorts := Seq(9000)
-
-dockerEntrypoint := Seq("bin/%s" format executableScriptName.value, "-Dconfig.resource=docker.conf")
 
 parallelExecution in Test := false
 

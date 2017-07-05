@@ -3,7 +3,6 @@ package com.example.data
 import org.scalatest.Succeeded
 import slick.dbio.Effect.{Read, Schema, Write}
 import slick.lifted.BaseJoinQuery
-import slick.profile.SqlAction
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -40,8 +39,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
   val createTables: DBIOAction[Unit, NoStream, Schema] = DBIO.seq(dragonTable.schema.create, riderTable.schema.create)
   val dropTables: DBIOAction[Unit, NoStream, Schema] = DBIO.seq(dragonTable.schema.drop, riderTable.schema.drop)
 
-  val addDragons: SqlAction[Option[Int], NoStream, Write] = dragonTable ++= dragons
-  val addRiders: SqlAction[Option[Int], NoStream, Write] = riderTable ++= riders
+  val addDragons: DBIOAction[Option[Int], NoStream, Write] = dragonTable ++= dragons
+  val addRiders: DBIOAction[Option[Int], NoStream, Write] = riderTable ++= riders
 
   val addTestData: DBIOAction[Unit, NoStream, Schema with Write] = DBIO.seq(addDragons, addRiders)
 
