@@ -1,6 +1,7 @@
 package com.example
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.model.StatusCodes._
 import com.example.data.{ DragonTestData, SpecBase }
 import com.example.http.routes.DragonsService
 import io.circe.Json
@@ -22,7 +23,7 @@ class DragonsServiceSpec
 
   val createDragonActions: DBIO[Option[Int]] = dragonTable ++= dragonsWithId
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     val initActions: DBIO[Unit] = DBIO.seq(createTableAction, createDragonActions)
     Await.result(db.run(initActions), 10 seconds)
   }
@@ -31,8 +32,6 @@ class DragonsServiceSpec
 
     it("should retrieve all dragons list") {
       Get("/dragons") ~> dragonsRoute ~> check {
-        val responseString: String = responseAs[String]
-        println(s"response: $responseString")
         responseAs[Json] should be(dragonsWithId.asJson)
       }
     }
@@ -40,17 +39,25 @@ class DragonsServiceSpec
 
   it("should retrieve dragons by id") {
     Get("/dragons/1") ~> dragonsRoute ~> check {
-      val responseString: String = responseAs[String]
-      println(s"response: $responseString")
       responseAs[Json] should be(dragonsWithId.head.asJson)
+    }
+  }
+
+  it("should return 404 if dragon id not found") {
+    Get("/dragons/999") ~> dragonsRoute ~> check {
+      status shouldBe NotFound
     }
   }
 
   it("should retrieve dragons by name") {
     Get("/dragons?name=Smaug") ~> dragonsRoute ~> check {
-      val responseString: String = responseAs[String]
-      println(s"response: $responseString")
-      responseAs[Json] should be(dragonsWithId.filter(_.name == "Smaug").head.asJson)
+      responseAs[Json] should be(dragonsWithId.find(_.name == "Smaug").head.asJson)
+    }
+  }
+
+  it("should return 404 if dragon name not found") {
+    Get("/dragons?name=Oogra") ~> dragonsRoute ~> check {
+      status shouldBe NotFound
     }
   }
 }
