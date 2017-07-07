@@ -1,23 +1,24 @@
 package com.example.data
 
-import akka.{ Done, NotUsed }
+import akka.{Done, NotUsed}
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.{Sink, Source}
 import org.scalatest.Succeeded
-import slick.backend.DatabasePublisher
-import slick.dbio.Effect.{ All, Schema, Write }
+import slick.basic.DatabasePublisher
+import slick.dbio.Effect.{All, Schema, Write}
 import io.circe.generic.auto._
 import io.circe.syntax._
+import slick.jdbc.JdbcBackend
 import slick.lifted.ProvenShape
 
 import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
+import scala.concurrent.{Await, Future}
 
 class ActionSpec extends SpecBase with DragonRiderTestData {
 
-  import dc.driver.api._
-  val db = dc.db
+  import dc.profile.api._
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 
@@ -30,7 +31,7 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
 //    found   : ((Option[Int], String, Int, Option[Int])) => DragonRiderTestData.this.Dragon
 //    required: ((Option[Int], String, Int, Option[Int])) => ActionSpec.this.Dragon
 //    def * = (id.?, name, firepower, riderId).mapTo[Dragon]
-    def * = (id.?, name, firepower, riderId) <> (Dragon.tupled, Dragon.unapply)
+    def * : ProvenShape[Dragon] = (id.?, name, firepower, riderId) <> (Dragon.tupled, Dragon.unapply)
   }
   val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]
 

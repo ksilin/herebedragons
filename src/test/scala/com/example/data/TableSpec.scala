@@ -2,14 +2,16 @@ package com.example.data
 
 import org.h2.jdbc.JdbcSQLException
 import org.scalatest.Succeeded
+import slick.jdbc.JdbcBackend
+import slick.lifted.ProvenShape
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class TableSpec extends SpecBase {
 
-  import dc.driver.api._
-  val db = dc.db
+  import dc.profile.api._
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   case class Dragon(id: Option[Int], name: String)
 
@@ -19,7 +21,7 @@ class TableSpec extends SpecBase {
     def name: Rep[String] = column[String]("name", O.Length(2))
 //    def firepower = column[Int]("firepower")
 
-    def * = (id.?, name) <> (upcased, downcased)
+    def * : ProvenShape[Dragon] = (id.?, name) <> (upcased, downcased)
 //    def * = (id.?, name) <>(Dragon.tupled, Dragon.unapply)
 //    def * = (id.?, name, firepower) <>(Dragon.tupled, Dragon.unapply)
   }
@@ -27,7 +29,7 @@ class TableSpec extends SpecBase {
   def upcased(tuple: (Option[Int], String)): Dragon            = Dragon(tuple._1, tuple._2.toUpperCase)
   def downcased(dragon: Dragon): Option[(Option[Int], String)] = Some((dragon.id, dragon.name.toLowerCase))
 
-  val dragonTable = TableQuery[DragonTable]
+  val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]
   val createTable = dragonTable.schema.create
 
   describe("tables") {

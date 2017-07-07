@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 
 class DragonRepositorySpec extends SpecBase with DragonRepository with DragonTestData {
 
-  import dc.driver.api._
+  import dc.profile.api._
 
   val createDragonActions: DBIO[Option[Int]] = dragonTable ++= dragons
 

@@ -2,7 +2,7 @@ package com.example.data
 
 import org.h2.jdbc.JdbcSQLException
 import slick.dbio.Effect.Schema
-import slick.jdbc.{ GetResult, SQLActionBuilder }
+import slick.jdbc.{ GetResult, JdbcBackend, SQLActionBuilder }
 import slick.lifted.ProvenShape
 
 import scala.concurrent.duration._
@@ -10,8 +10,8 @@ import scala.concurrent.Await
 
 class SQLSpec extends SpecBase with DragonTestData {
 
-  import dc.driver.api._
-  val db = dc.db
+  import dc.profile.api._
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 

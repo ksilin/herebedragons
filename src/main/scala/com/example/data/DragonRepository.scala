@@ -1,7 +1,7 @@
 package com.example.data
 
-import slick.backend.DatabaseConfig
-import slick.driver.JdbcProfile
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
 
 import scala.concurrent.Future
@@ -9,7 +9,7 @@ import scala.concurrent.Future
 trait DragonRepository {
 
   val dc: DatabaseConfig[JdbcProfile]
-  import dc.driver.api._
+  import dc.profile.api._
   lazy val db: Database = dc.db
 
   def createAll(dragons: Seq[Dragon]): Future[Option[Int]] = db.run(dragonTable ++= dragons)

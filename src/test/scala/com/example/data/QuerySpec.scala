@@ -2,6 +2,7 @@ package com.example.data
 
 import org.scalatest.Succeeded
 import slick.dbio.Effect.Schema
+import slick.jdbc.JdbcBackend
 import slick.lifted.{ CompiledExecutable, ProvenShape }
 
 import scala.concurrent.Await
@@ -9,8 +10,8 @@ import scala.concurrent.duration._
 
 class QuerySpec extends SpecBase with DragonTestData {
 
-  import dc.driver.api._
-  val db = dc.db
+  import dc.profile.api._
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 

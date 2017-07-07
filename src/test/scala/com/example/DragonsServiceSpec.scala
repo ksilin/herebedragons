@@ -19,7 +19,7 @@ class DragonsServiceSpec
     with ScalatestRouteTest
     with DragonTestData {
 
-  import dc.driver.api._
+  import dc.profile.api._
 
   val createDragonActions: DBIO[Option[Int]] = dragonTable ++= dragonsWithId
 

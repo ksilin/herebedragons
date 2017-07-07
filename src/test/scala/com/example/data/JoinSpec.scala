@@ -1,18 +1,19 @@
 package com.example.data
 
 import org.scalatest.Succeeded
-import slick.dbio.Effect.{ Read, Schema, Write }
-import slick.lifted.{ BaseJoinQuery, ProvenShape }
+import slick.dbio.Effect.{Read, Schema, Write}
+import slick.jdbc.JdbcBackend
+import slick.lifted.{BaseJoinQuery, ProvenShape}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class JoinSpec extends SpecBase with DragonRiderTestData {
 
-  import dc.driver.StreamingDriverAction
-  import dc.driver.api._
+  import dc.profile.StreamingProfileAction
+  import dc.profile.api._
 
-  val db = dc.db
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 
@@ -58,7 +59,7 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
       val crossJoin: BaseJoinQuery[DragonTable, RiderTable, Dragon, Rider, Seq, DragonTable, RiderTable] =
         dragonTable.join(riderTable)
 
-      val result: StreamingDriverAction[Seq[(Dragon, Rider)], (Dragon, Rider), Read] = crossJoin.result
+      val result: StreamingProfileAction[Seq[(Dragon, Rider)], (Dragon, Rider), Read] = crossJoin.result
 
       db.run(result) map { x =>
         println("x------------------" + x)
@@ -71,7 +72,7 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
       val crossJoin: Query[(Rep[String], Rep[String]), (String, String), Seq] =
         dragonTable.join(riderTable) map { case (dragon, rider) => (dragon.name, rider.name) }
 
-      val result: StreamingDriverAction[Seq[(String, String)], (String, String), Read] = crossJoin.result
+      val result: StreamingProfileAction[Seq[(String, String)], (String, String), Read] = crossJoin.result
 
       db.run(result) map { x =>
         println("x------------------" + x)

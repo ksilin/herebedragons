@@ -5,8 +5,8 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.example.data.DragonTestData
 import com.example.http.routes.DragonsService
-import slick.backend.DatabaseConfig
-import slick.driver.JdbcProfile
+import slick.basic.DatabaseConfig
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext
 
