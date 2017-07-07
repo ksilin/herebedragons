@@ -2,7 +2,7 @@ package com.example.data
 
 import org.scalatest.Succeeded
 import slick.dbio.Effect.Schema
-import slick.lifted.CompiledExecutable
+import slick.lifted.{ CompiledExecutable, ProvenShape }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -14,11 +14,11 @@ class QuerySpec extends SpecBase with DragonTestData {
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 
-    def id        = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def name      = column[String]("name", O.Length(100))
-    def firepower = column[Int]("firepower")
+    def id: Rep[Int]        = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String]   = column[String]("name", O.Length(100))
+    def firepower: Rep[Int] = column[Int]("firepower")
 
-    def * = (id.?, name, firepower) <> (Dragon.tupled, Dragon.unapply)
+    def * : ProvenShape[Dragon] = (id.?, name, firepower).mapTo[Dragon]
   }
 
   val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]

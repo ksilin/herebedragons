@@ -21,7 +21,7 @@ trait DragonsService extends HttpConfig with DragonRepository with FailFastCirce
         }
       } ~
       get {
-        complete(getAll())
+        complete(getAll)
       }
     } ~
     path(IntNumber) { id =>

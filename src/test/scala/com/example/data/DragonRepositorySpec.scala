@@ -14,7 +14,7 @@ class DragonRepositorySpec extends SpecBase with DragonRepository with DragonTes
 //    Await.result(db.run(createDragonActions), 10 seconds)
 //  }
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     val initActions: DBIO[Unit] = DBIO.seq(createTableAction, createDragonActions)
     Await.result(db.run(initActions), 10 seconds)
   }
@@ -22,7 +22,7 @@ class DragonRepositorySpec extends SpecBase with DragonRepository with DragonTes
   describe("dragons") {
 
     it("should be present on startup") {
-      val eventualDragons: Future[List[Dragon]] = getAll()
+      val eventualDragons: Future[List[Dragon]] = getAll
       eventualDragons map { d => d.size should be(names.size)
       }
     }

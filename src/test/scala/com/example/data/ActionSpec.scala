@@ -7,9 +7,9 @@ import akka.stream.scaladsl.{ Sink, Source }
 import org.scalatest.Succeeded
 import slick.backend.DatabasePublisher
 import slick.dbio.Effect.{ All, Schema, Write }
-
 import io.circe.generic.auto._
 import io.circe.syntax._
+import slick.lifted.ProvenShape
 
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
@@ -21,24 +21,28 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 
-    def id        = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def name      = column[String]("name")
-    def firepower = column[Int]("firepower")
-    def riderId   = column[Option[Int]]("riderId")
+    def id: Rep[Int]              = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String]         = column[String]("name")
+    def firepower: Rep[Int]       = column[Int]("firepower")
+    def riderId: Rep[Option[Int]] = column[Option[Int]]("riderId")
 
+    // Error:(29, 51) type mismatch;
+//    found   : ((Option[Int], String, Int, Option[Int])) => DragonRiderTestData.this.Dragon
+//    required: ((Option[Int], String, Int, Option[Int])) => ActionSpec.this.Dragon
+//    def * = (id.?, name, firepower, riderId).mapTo[Dragon]
     def * = (id.?, name, firepower, riderId) <> (Dragon.tupled, Dragon.unapply)
   }
-  val dragonTable = TableQuery[DragonTable]
+  val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]
 
   class RiderTable(tag: Tag) extends Table[Rider](tag, "RIDERS") {
 
-    def id      = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def name    = column[String]("name")
-    def ability = column[Int]("ability")
+    def id: Rep[Int]      = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String] = column[String]("name")
+    def ability: Rep[Int] = column[Int]("ability")
 
-    def * = (id.?, name, ability) <> (Rider.tupled, Rider.unapply)
+    def * : ProvenShape[Rider] = (id.?, name, ability).mapTo[Rider]
   }
-  val riderTable = TableQuery[RiderTable]
+  val riderTable: TableQuery[RiderTable] = TableQuery[RiderTable]
 
   val createTables: DBIOAction[Unit, NoStream, Schema] = DBIO.seq(dragonTable.schema.create, riderTable.schema.create)
   val dropTables: DBIOAction[Unit, NoStream, Schema]   = DBIO.seq(dragonTable.schema.drop, riderTable.schema.drop)
@@ -48,8 +52,8 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
 
   val addTestData: DBIOAction[Unit, NoStream, Schema with Write] = DBIO.seq(addDragons, addRiders)
 
-  override def beforeAll() = Await.result(db.run(createTables andThen addTestData), 10 seconds)
-  override def afterAll()  = Await.result(db.run(dropTables), 10 seconds)
+  override def beforeAll(): Unit = Await.result(db.run(createTables andThen addTestData), 10 seconds)
+  override def afterAll(): Unit  = Await.result(db.run(dropTables), 10 seconds)
 
   describe("actions") {
 

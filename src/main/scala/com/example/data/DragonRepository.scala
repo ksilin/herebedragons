@@ -2,6 +2,7 @@ package com.example.data
 
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
+import slick.lifted.ProvenShape
 
 import scala.concurrent.Future
 
@@ -24,16 +25,16 @@ trait DragonRepository {
   def getById(id: Int): Future[Option[Dragon]]        = db.run(byIdQuery(id).result.headOption)
   def getByName(name: String): Future[Option[Dragon]] = db.run(byNameQuery(name).result.headOption)
 
-  def getAll(): Future[List[Dragon]] = db.run(dragonTable.to[List].result)
+  def getAll: Future[List[Dragon]] = db.run(dragonTable.to[List].result)
 
   def delete(id: Int): Future[Int] = db.run(byIdQuery(id).delete)
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
-    val id        = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    val name      = column[String]("name")
-    val firepower = column[Int]("firepower")
+    val id: Rep[Int]        = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    val name: Rep[String]   = column[String]("name")
+    val firepower: Rep[Int] = column[Int]("firepower")
 
-    def * = (id.?, name, firepower) <> (Dragon.tupled, Dragon.unapply)
+    def * : ProvenShape[Dragon] = (id.?, name, firepower).mapTo[Dragon]
   }
 
   val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]
