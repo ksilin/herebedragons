@@ -1,4 +1,4 @@
-package com.example.utils
+package com.example.http
 
 import com.typesafe.config.ConfigFactory
 

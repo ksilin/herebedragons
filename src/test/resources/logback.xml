@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="CONSOLE-LOGGER" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- see http://logback.qos.ch/manual/layouts.html#coloring -->
+        <withJansi>false</withJansi>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <encoder>
+            <pattern>[%date{"yyyy-MM-dd'T'HH:mm:ss,SSSXXX", UTC}] [%-5level] [%logger{0}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="slick" level="DEBUG">
+    <appender-ref ref="CONSOLE-LOGGER" />
+    </logger>
+
+</configuration>

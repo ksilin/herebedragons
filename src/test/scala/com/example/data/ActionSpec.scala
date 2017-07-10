@@ -1,19 +1,20 @@
 package com.example.data
 
-import akka.{Done, NotUsed}
+import akka.{ Done, NotUsed }
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{ Sink, Source }
 import org.scalatest.Succeeded
 import slick.basic.DatabasePublisher
-import slick.dbio.Effect.{All, Schema, Write}
+import slick.dbio.Effect.{ All, Read, Schema, Write }
 import io.circe.generic.auto._
 import io.circe.syntax._
+import slick.dbio.Effect
 import slick.jdbc.JdbcBackend
 import slick.lifted.ProvenShape
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ Await, Future }
 
 class ActionSpec extends SpecBase with DragonRiderTestData {
 
@@ -47,6 +48,8 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
 
   val createTables: DBIOAction[Unit, NoStream, Schema] = DBIO.seq(dragonTable.schema.create, riderTable.schema.create)
   val dropTables: DBIOAction[Unit, NoStream, Schema]   = DBIO.seq(dragonTable.schema.drop, riderTable.schema.drop)
+  val truncateTables: DBIOAction[Unit, NoStream, Schema] =
+    DBIO.seq(dragonTable.schema.truncate, riderTable.schema.truncate)
 
   val addDragons = dragonTable ++= dragons
   val addRiders  = riderTable ++= riders
@@ -97,7 +100,7 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
       }
     }
 
-    it("should combine actions with >> combinator") {
+    it("should combine actions with >> / andThen combinator") {
       val truncateDragons: DBIO[Int]                                 = dragonTable.delete
       val truncateAndReplace: DBIOAction[Option[Int], NoStream, All] = truncateDragons >> addDragons
       db.run(truncateAndReplace) map { addedRows =>
@@ -115,53 +118,51 @@ class ActionSpec extends SpecBase with DragonRiderTestData {
     }
 
     it("should map actions") {
-      val hiccupQuery: Query[RiderTable, Rider, Seq] =
-        riderTable.filter(_.name === "Hiccup")
-      val hiccupAction: DBIO[Option[Rider]] =
-        hiccupQuery.result.headOption
+      val hiccupQuery: Query[RiderTable, Rider, Seq] = riderTable.filter(_.name === "Hiccup")
+      val hiccupAction: DBIO[Option[Rider]]          = hiccupQuery.result.headOption
 
-      def assignDrumToRider(riderId: Option[Int]) =
-        dragonTable += Dragon(None, "Drum", 25, riderId)
+      def assignDragonToRider(dragonName: String, riderId: Option[Int]) =
+        dragonTable += Dragon(None, dragonName, 25, riderId)
 
-      val addHiccupAsToothlessRider: DBIO[Int] =
-        hiccupAction.flatMap { hiccup: Option[Rider] =>
-          hiccup
-            .map { h =>
-              assignDrumToRider(h.id)
+      val addHiccupAsDrumRider: DBIO[Int] =
+        hiccupAction.flatMap { maybeHiccup: Option[Rider] =>
+          maybeHiccup
+            .map { h: Rider =>
+              assignDragonToRider("Drum", h.id)
             }
             .getOrElse(
               DBIO.failed(new Exception("Hiccup not found"))
             )
         }
 
-      db.run(addHiccupAsToothlessRider) map { res =>
-        println("attached Drum to hiccup?" + res)
+      db.run(addHiccupAsDrumRider) map { res =>
+        println("attached Drum to Hiccup: " + res)
         res should be > 0
       }
     }
 
-    it("should combine actions with for-comprehension") {
-      val resAction: DBIO[(Seq[Dragon], Seq[Rider])] = for {
+    it("should combine actions with for-comprehension adn results with zip") {
+      val getBestPairsAction: DBIOAction[Seq[(Dragon, Rider)], NoStream, Read] = for {
         dragons: Seq[Dragon] <- dragonTable.filter(_.firepower > 50).filter(_.riderId.isEmpty).result
         riders: Seq[Rider]   <- riderTable.filter(r => r.ability > 50).result
-      } yield (dragons, riders)
+      } yield dragons zip riders
 
-      db.run(resAction) map { s =>
-        println(s)
+      db.run(getBestPairsAction) map { pairs =>
+        pairs foreach println
         Succeeded
       }
     }
 
     it("should combine actions with zip") {
-      val resAction: DBIO[(Seq[Dragon], Seq[Rider])] =
+      val getBestAction: DBIO[(Seq[Dragon], Seq[Rider])] =
         dragonTable
           .filter(_.firepower > 50)
           .filter(_.riderId.isEmpty)
           .result
           .zip(riderTable.filter(_.ability > 50).result)
 
-      db.run(resAction) map { s =>
-        println(s)
+      db.run(getBestAction) map { best =>
+        println(best)
         Succeeded
       }
     }

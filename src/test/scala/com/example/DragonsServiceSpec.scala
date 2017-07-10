@@ -2,8 +2,8 @@ package com.example
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.model.StatusCodes._
-import com.example.data.{ DragonTestData, SpecBase }
-import com.example.http.routes.DragonsService
+import com.example.data.{DragonTestData, SpecBase}
+import com.example.http.DragonsService
 import io.circe.Json
 import org.scalatest.Matchers
 import io.circe.generic.auto._

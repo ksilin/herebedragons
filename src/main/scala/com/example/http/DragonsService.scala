@@ -1,11 +1,10 @@
-package com.example.http.routes
+package com.example.http
 
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.example.data.{ Dragon, DragonRepository }
-import com.example.utils.HttpConfig
+import com.example.data.{Dragon, DragonRepository}
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
 

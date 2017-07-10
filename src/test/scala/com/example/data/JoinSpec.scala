@@ -1,9 +1,9 @@
 package com.example.data
 
 import org.scalatest.Succeeded
-import slick.dbio.Effect.{Read, Schema, Write}
+import slick.dbio.Effect.{ Read, Schema, Write }
 import slick.jdbc.JdbcBackend
-import slick.lifted.{BaseJoinQuery, ProvenShape}
+import slick.lifted.{ BaseJoinQuery, ProvenShape }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -61,8 +61,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
 
       val result: StreamingProfileAction[Seq[(Dragon, Rider)], (Dragon, Rider), Read] = crossJoin.result
 
-      db.run(result) map { x =>
-        println("x------------------" + x)
+      db.run(result) map { allPairs =>
+        allPairs foreach println
         Succeeded
       }
     }
@@ -74,8 +74,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
 
       val result: StreamingProfileAction[Seq[(String, String)], (String, String), Read] = crossJoin.result
 
-      db.run(result) map { x =>
-        println("x------------------" + x)
+      db.run(result) map { namePairs =>
+        namePairs foreach println
         Succeeded
       }
     }
@@ -87,8 +87,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
         r <- riderTable
       } yield (d.name, r.name)
 
-      db.run(crossJoin.result) map { x =>
-        println("x------------------" + x)
+      db.run(crossJoin.result) map { namePairs =>
+        namePairs foreach println
         Succeeded
       }
     }
@@ -100,8 +100,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
         r <- riderTable if d.riderId === r.id
       } yield (d.name, r.name)
 
-      db.run(implicitJoin.result) map { x =>
-        println("x------------------" + x)
+      db.run(implicitJoin.result) map { realPairs =>
+        realPairs foreach println
         Succeeded
       }
     }
@@ -116,8 +116,8 @@ class JoinSpec extends SpecBase with DragonRiderTestData {
           .on { case (dragon, rider) => dragon.riderId === rider.id }
           .map { case (dragon, rider) => (dragon.name, rider.name) }
 
-      db.run(explicitJoin.result) map { x =>
-        println("x------------------" + x)
+      db.run(explicitJoin.result) map { realPairs =>
+        realPairs foreach println
         Succeeded
       }
     }
