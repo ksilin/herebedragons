@@ -2,43 +2,44 @@ package com.example.data
 
 import org.scalatest.Succeeded
 import slick.dbio.Effect.Schema
-import slick.lifted.CompiledExecutable
+import slick.jdbc.JdbcBackend
+import slick.lifted.{ CompiledExecutable, ProvenShape }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 class QuerySpec extends SpecBase with DragonTestData {
 
-  import dc.driver.api._
-  val db = dc.db
+  import dc.profile.api._
+  val db: JdbcBackend#DatabaseDef = dc.db
 
   class DragonTable(tag: Tag) extends Table[Dragon](tag, "DRAGONS") {
 
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    def name = column[String]("name", O.Length(100))
-    def firepower = column[Int]("firepower")
+    def id: Rep[Int]        = column[Int]("id", O.PrimaryKey, O.AutoInc)
+    def name: Rep[String]   = column[String]("name", O.Length(100))
+    def firepower: Rep[Int] = column[Int]("firepower")
 
-    def * = (id.?, name, firepower) <>(Dragon.tupled, Dragon.unapply)
+    def * : ProvenShape[Dragon] = (id.?, name, firepower).mapTo[Dragon]
   }
 
   val dragonTable: TableQuery[DragonTable] = TableQuery[DragonTable]
 
   val createTable: DBIOAction[Unit, NoStream, Schema] = dragonTable.schema.create
-  val dropTable: DBIOAction[Unit, NoStream, Schema] = dragonTable.schema.drop
-  val createDragonActions = dragonTable ++= names.map(Dragon(None, _, r.nextInt(100)))
-  val prepareTestData: DBIO[Unit] = DBIO.seq(createTable, createDragonActions)
+  val dropTable: DBIOAction[Unit, NoStream, Schema]   = dragonTable.schema.drop
+  val createDragonActions                             = dragonTable ++= names.map(Dragon(None, _, r.nextInt(100)))
+  val prepareTestData: DBIO[Unit]                     = DBIO.seq(createTable, createDragonActions)
 
-  override def beforeAll() = Await.result(db.run(prepareTestData), 10 seconds)
-  override def afterAll() = Await.result(db.run(dropTable), 10 seconds)
+  override def beforeAll(): Unit = Await.result(db.run(prepareTestData), 10 seconds)
+  override def afterAll(): Unit  = Await.result(db.run(dropTable), 10 seconds)
 
   describe("queries") {
 
     it("should retrieve dragons") {
       // select "id", "name", "firepower" from "DRAGONS"
-      db.run(dragonTable.result) map {_.size should be > 10}
+      db.run(dragonTable.result) map { _.size should be > 10 }
     }
 
-    it("should filter"){
+    it("should filter") {
       // select "id", "name", "firepower" from "DRAGONS" where "firepower" > 50
       val fp50Query: Query[DragonTable, Dragon, Seq] = dragonTable.filter(_.firepower > 50)
       db.run(fp50Query.result) map { dragons =>
@@ -47,11 +48,11 @@ class QuerySpec extends SpecBase with DragonTestData {
       }
     }
 
-    it("should filter with explicit types"){
+    it("should filter with explicit types") {
       // select "id", "name", "firepower" from "DRAGONS" where "firepower" > 50
-      val fp50Query: Query[DragonTable, Dragon, Seq] = dragonTable.filter{ tbl: DragonTable =>
-          val fp: Rep[Int] = tbl.firepower
-          fp > 50
+      val fp50Query: Query[DragonTable, Dragon, Seq] = dragonTable.filter { tbl: DragonTable =>
+        val fp: Rep[Int] = tbl.firepower
+        fp > 50
       }
       db.run(fp50Query.result) map { dragons =>
         println(s"dragons: $dragons")
@@ -68,7 +69,7 @@ class QuerySpec extends SpecBase with DragonTestData {
       }
     }
 
-    it("filters and projections with for comprehension"){
+    it("filters and projections with for comprehension") {
       // select "name" from "DRAGONS" where "firepower" > 50
       val fp50Names: Query[Rep[String], String, Seq] = for {
         dragon <- dragonTable if dragon.firepower > 50
@@ -93,21 +94,22 @@ class QuerySpec extends SpecBase with DragonTestData {
 
     it("should perform sorting") {
       // select "firepower" from "DRAGONS" order by "firepower"
-      db.run(dragonTable.map(_.firepower).sorted.result) map {firepower =>
+      db.run(dragonTable.map(_.firepower).sorted.result) map { firepower =>
         println(s"firepower: $firepower")
         Succeeded
       }
     }
 
     // dont be naive here - slick does not know how to shape `dragonTable.groupBy(_.id).result` and will not compile
-    it("should perform grouping"){
-      db.run(dragonTable.groupBy(_.id).map { case (id, group) => (id, group.map(_.firepower).avg) }.result) map {grouped =>
-        println(s"grouped: $grouped")
-        grouped.size should be > 10
+    it("should perform grouping") {
+      db.run(dragonTable.groupBy(_.id).map { case (id, group) => (id, group.map(_.firepower).avg) }.result) map {
+        grouped =>
+          println(s"grouped: $grouped")
+          grouped.size should be > 10
       }
     }
 
-    it("should limit and offset"){
+    it("should limit and offset") {
       // select "id", "name", "firepower" from "DRAGONS" limit 3 offset 10
       val paged: Query[DragonTable, Dragon, Seq] = dragonTable.drop(10).take(3)
       db.run(paged.result) map { dragons =>
@@ -116,27 +118,27 @@ class QuerySpec extends SpecBase with DragonTestData {
       }
     }
 
-    it("should limit and offset - shooting oneself in the foot"){
+    it("should limit and offset - shooting oneself in the foot") {
       // select "id", "name", "firepower" from "DRAGONS" where 1=0
       val paged: Query[DragonTable, Dragon, Seq] = dragonTable.take(3).drop(10)
       db.run(paged.result) map { dragons =>
         println(s"dragons: $dragons")
-        dragons.size should be(3)
+        dragons.size should be(0)
       }
     }
 
-    it("should limit and offset depends on the order"){
+    it("take and drop result depend on the order") {
       // select "id", "name", "firepower" from "DRAGONS" limit 3 offset 10
       val paged: Query[DragonTable, Dragon, Seq] = dragonTable.take(10).drop(3)
       db.run(paged.result) map { dragons =>
         println(s"dragons: $dragons")
-        dragons.size should be(3)
+        dragons.size should be(7)
       }
     }
 
-    it("should offset"){
+    it("should offset") {
       // select "id", "name", "firepower" from "DRAGONS" limit -1 offset 10
-      db.run(dragonTable.drop(10).result) map {dragons =>
+      db.run(dragonTable.drop(10).result) map { dragons =>
         println(s"dragons: $dragons")
         dragons.size should be < 10
       }
@@ -144,7 +146,7 @@ class QuerySpec extends SpecBase with DragonTestData {
 
     it("should perform updates - but updates are not queries") {
 
-      val smaug: Query[DragonTable, Dragon, Seq] = dragonTable.filter(_.name === "Smaug")
+      val smaug: Query[DragonTable, Dragon, Seq]    = dragonTable.filter(_.name === "Smaug")
       val smaugFirepower: Query[Rep[Int], Int, Seq] = smaug.map(_.firepower)
 
       db.run(smaugFirepower.result) map { newFirePower: Seq[Int] =>
