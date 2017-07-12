@@ -1,7 +1,7 @@
 Here be dragons - exploring slick 3
 ========
 
-Created for the Dresden Scala User Group 2016.2.29
+Created for the Dresden Scala User Group 2016.2.29, updated for 2017.7.13
 
 ## Run application
 To run application, call:
